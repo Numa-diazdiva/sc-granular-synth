@@ -1,5 +1,5 @@
 s.boot;
-b = Buffer.readChannel(s, "/home/numa/Escritorio/PEME/Rocío Burgos/2023 06 21 PEME TP 03 Burgos Gomez  OS-20230628T175647Z-001/2023 06 21 PEME TP 03 Burgos Gomez  OS/03 Variado formado .wav", channels: [0]);
+b = Buffer.readChannel(s, "archivo-de-audio.wav", channels: [0]);
 b.play;
 
 
