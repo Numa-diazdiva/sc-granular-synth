@@ -1,10 +1,11 @@
 (
 s.boot;
-b = Buffer.readChannel(s, "", channels: [0]);
+b = Buffer.readChannel(server: s, path: "/home/numa/Escritorio/Radar de Carne.wav", channels: [0]);
 )
-b.play;
+
 s.plotTree;
 s.plotTreeView;
+b.play;
 
 /*
 SynthDef granulador sincrónico
@@ -30,15 +31,35 @@ SynthDef.new(\syncGranulator,
 
 x = Synth.new(\syncGranulator, [grainDur: 0.1, grainDensity: 45]);
 
+
+~openFile = {
+	var fileLocation = "";
+	Dialog.openPanel(
+		okFunc: {
+			arg path;
+			fileLocation = path.value;
+			path.postln;
+		}
+	);
+	fileLocation;
+}
+~openFile.value;
+
+currentEnvironment;
+
 /*
 Elementos de la GUI
 */
 (
-w = Window.new("Granulator", Rect(200,300,400,500));
+var grainDensityControl, grainDurationControl, bufferPosControl, recordControl, openFileControl, controlPanel;
+w = Window.new("Granulator", Rect(200,300,400,200));
 w.alwaysOnTop_(true);
 w.front;
 
-~grainDensityControl = VLayout(
+b = Buffer.readChannel(server: s, path: "/home/numa/Escritorio/Radar de Carne.wav", channels: [0]);
+x = Synth.new(\syncGranulator, [grainDur: 0.1, grainDensity: 45]);
+
+grainDensityControl = VLayout(
 	StaticText().string_("density"),
 	Slider.new()
 	      .action_({
@@ -47,7 +68,7 @@ w.front;
 	      })
 );
 
-~grainDurationControl = VLayout(
+grainDurationControl = VLayout(
 	StaticText().string_("duration"),
 	Slider.new()
 	      .action_({
@@ -56,7 +77,7 @@ w.front;
 	      })
 );
 
-~bufferPosControl = VLayout(
+bufferPosControl = VLayout(
 	StaticText().string_("bufferPos"),
 	Slider.new()
 	      .action_({
@@ -66,22 +87,35 @@ w.front;
 );
 
 ~recording = false;
-~recordControl = VLayout(
-	StaticText().string_("Record"),
-	Button.new()
-	      .action_({
-		    if(~recording, {
-			    s.stopRecording;
-		      },
-		      {
-			    s.record;
-		      }
-		    );
-		   ~recording = ~recording.not;
-	  })
+recordControl = VLayout(
+	Button.new().action_({
+		if(~recording, {
+			  s.stopRecording;
+		    },
+		    {
+			  s.record;
+		    });
+		~recording = ~recording.not;
+	})
+	.string_("Record");
 );
 
-w.layout_(GridLayout.rows([~grainDensityControl,~grainDurationControl,~bufferPosControl,~recordControl]));
+openFileControl = VLayout(
+	Button.new().action_({
+		Dialog.openPanel(
+		okFunc: {
+				arg path;
+				b = Buffer.readChannel(s, path.value, channels: [0]);
+			}
+		);
+
+		x = Synth.new(\syncGranulator, [grainDur: 0.1, grainDensity: 45]);
+	}).string_("Open")
+);
+
+controlPanel = VLayout(recordControl, openFileControl);
+
+w.layout_(GridLayout.rows([grainDensityControl,grainDurationControl,bufferPosControl,controlPanel]));
 )
 
 
