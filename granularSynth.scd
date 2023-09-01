@@ -1,6 +1,8 @@
 (
 s.boot;
-b = Buffer.readChannel(server: s, path: "/home/numa/Escritorio/Radar de Carne.wav", channels: [0]);
+MIDIClient.init();
+MIDIIn.connectAll();
+MIDIFunc.trace(true);
 )
 
 s.plotTree;
@@ -46,7 +48,7 @@ x = Synth.new(\syncGranulator, [grainDur: 0.1, grainDensity: 45]);
 ~openFile.value;
 
 currentEnvironment;
-
+b.play;
 /*
 Elementos de la GUI
 */
@@ -56,8 +58,10 @@ w = Window.new("Granulator", Rect(200,300,400,200));
 w.alwaysOnTop_(true);
 w.front;
 
-b = Buffer.readChannel(server: s, path: "/home/numa/Escritorio/Radar de Carne.wav", channels: [0]);
+b = Buffer.readChannel(server: s, path: "/home/numa/Escritorio/rc.wav", channels: [0]);
 x = Synth.new(\syncGranulator, [grainDur: 0.1, grainDensity: 45]);
+
+
 
 grainDensityControl = VLayout(
 	StaticText().string_("density"),
@@ -116,6 +120,20 @@ openFileControl = VLayout(
 controlPanel = VLayout(recordControl, openFileControl);
 
 w.layout_(GridLayout.rows([grainDensityControl,grainDurationControl,bufferPosControl,controlPanel]));
+
+MIDIFunc.cc({
+	arg val, num, chan, src;
+	if(num == 16, {
+		x.set(\grainDensity, val.value.linexp(0,127,1,200));
+	});
+	if(num == 17, {
+		x.set(\grainDur, val.value.linexp(0,127,0.01,0.1));
+	});
+	if(num == 18, {
+		x.set(\bufferPos, val.value.linexp(0,127,0.01,1));
+	});
+});
+
 )
 
 
